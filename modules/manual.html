@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+    body {
+        font-family: Helvetica, Arial, sans-serif;
+        line-height: 1.6;
+        color: #2c3e50;
+        background-color: #f8f9fa;
+        padding: 40px;
+        max-width: 900px;
+        margin: auto;
+    }
+    .header-box {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        color: #0253a4;
+        padding: 30px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    h1 { margin: 0; font-size: 2.5em; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+    h2 { color: #2980b9; border-left: 5px solid #3498db; padding-left: 15px; margin-top: 40px; background: #fff; padding: 10px; border-radius: 0 5px 5px 0; }
+    h3 { color: #16a085; border-bottom: 1px solid #dcdde1; padding-bottom: 5px; }
+    
+    .feature-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+    .step-box {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        border: 1px solid #e1e4e8;
+    }
+    .badge {
+        display: inline-block;
+        padding: 3px 12px;
+        background: #3498db;
+        color: white;
+        border-radius: 20px;
+        font-size: 0.85em;
+        font-weight: bold;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+    }
+    code {
+        background-color: #f1f2f6;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: 'Fira Code', 'Consolas', monospace;
+        color: #e74c3c;
+    }
+    .context-item {
+        font-weight: bold;
+        color: #d35400;
+    }
+    .info-box {
+        background-color: #e1f5fe;
+        border-left: 5px solid #03a9f4;
+        padding: 15px;
+        margin: 20px 0;
+        font-size: 0.95em;
+    }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    td { padding: 8px; border-bottom: 1px solid #eee; vertical-align: top; }
+    .key { font-weight: bold; width: 30%; color: #34495e; }
+</style>
+</head>
+<body>
+
+<div class="header-box">
+    <h1>OrbVista Manual</h1>
+    <p>Advanced Volumetric Analysis & Molecular Property Mapping Suite</p>
+</div>
+
+<div class="step-box">
+    <h2>1. Data Handling & File Management</h2>
+    <p><span class="badge">Import</span> Use the <b>App</b> menu to load various computational formats:</p>
+    <ul>
+        <li><code>Load MO / Dens / ESP Cube</code>: Import standard Gaussian-style cube files.</li>
+        <li><code>Load Molden / FCHK</code>: Import electronic structure data directly for on-the-fly grid calculation.</li>
+    </ul>
+    <p><b>File List Interaction:</b> Loaded files appear in the sidebar. 
+    Single-click to draw the structure; <b>Double-click</b> to remove a file from the session.</p>
+</div>
+
+<h2>2. Visualization & Analysis</h2>
+
+<div class="feature-grid">
+    <div class="step-box">
+        <h3>Electronic Properties</h3>
+        <ul>
+            <li><b>MOs:</b> Select a Molden/FCHK file to unlock the <b>Alpha/Beta Orbital Tabs</b>.</li>
+            <li><b>Mapping:</b> Toggle the <code>Scale Bar</code> for ESP or Spin Density mapping.</li>
+            <li><b>Adjustments:</b> Use the sliders to set <code>Opacity</code> and define <code>v_max / v_min</code> for consistent color scales.</li>
+        </ul>
+    </div>
+    <div class="step-box">
+        <h3>Grid & Calculation</h3>
+        <p>Access <code>Menu -> Grid Settings</code> to define the resolution for new calculations:</p>
+        <ul>
+            <li><b>n_pts:</b> Grid points (nx, ny, nz) for volumetric data.</li>
+            <li><b>Padding:</b> Buffer zone (in Angström) around the molecule to prevent field cut-offs.</li>
+        </ul>
+    </div>
+</div>
+
+<h2>3. Interaction & Customization</h2>
+
+<div class="step-box">
+    <h3><span class="badge">Right-Click</span> Plotter Context Menus</h3>
+    <table>
+        <tr><td class="key">Canvas</td><td>Change background color (Dark/Light mode).</td></tr>
+        <tr><td class="key">Orbital Lobe</td><td>Individually change the color of the selected positive/negative lobe.</td></tr>
+        <tr><td class="key">Density</td><td>Customize the color mapping of the density surface.</td></tr>
+    </table>
+</div>
+
+<h2>4. Generation & Export Options</h2>
+
+<div class="step-box">
+    <h3><span class="badge">Draw Menu</span> Calculate Volumetric Data</h3>
+    <ul>
+        <li><b>MO / Dens / ESP:</b> Select a Molden or FCHK file to trigger 3D generation.</li>
+        <li><b>ESP (Cube-based):</b> Select <b>two</b> files (Density + ESP-Potential) to generate a mapped surface from existing data.</li>
+        <li><b>Spin Mapping:</b> Directly project spin density onto the electron density surface from QC outputs.</li>
+    </ul>
+</div>
+
+<div class="step-box">
+    <h3><span class="badge">Export Menu</span> Save Your Results</h3>
+    <ul>
+        <li><b>Images:</b> High-resolution <code>.png</code> screenshots.</li>
+        <li><b>Rendering:</b> Export scenes as <code>POV-Ray (.inc)</code> or <code>Blender (.glb)</code> files.</li>
+        <li><b>Analysis:</b> Save <code>.cube</code> files. <span class="context-item">Note:</span> Exporting an MO/Dens cube also generates a synchronized <code>.xyz</code> file for external tools like ChimeraX.</li>
+    </ul>
+</div>
+
+<div class="info-box">
+    <strong>Scientific Tip:</strong> For publication-quality animations, export your reaction segments via <b>POV-Ray</b>. The generated arrays allow for seamless frame-by-frame rendering with consistent isosurfaces.
+</div>
+
+<p style="text-align: center; color: #95a5a6; font-size: 0.85em; margin-top: 50px;">
+    OrbVista v1.0 &copy; 2026 - Theoretical Chemistry Visualization Suite Dr. Tobias Schulz
+</p>
+
+</body>
+</html>

@@ -1,0 +1,457 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>885</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>OrbVista</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QWidget" name="plot_widget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>230</x>
+      <y>10</y>
+      <width>641</width>
+      <height>481</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="colorbox">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>20</y>
+      <width>91</width>
+      <height>26</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QListView" name="file_list">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>40</y>
+      <width>111</width>
+      <height>201</height>
+     </rect>
+    </property>
+    <property name="editTriggers">
+     <set>QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed|QAbstractItemView::SelectedClicked</set>
+    </property>
+    <property name="selectionMode">
+     <enum>QAbstractItemView::ExtendedSelection</enum>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>20</y>
+      <width>111</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>available files</string>
+    </property>
+   </widget>
+   <widget class="QWidget" name="layoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>60</y>
+      <width>91</width>
+      <height>183</height>
+     </rect>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Opacity %</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="input_opacity">
+       <property name="text">
+        <string>50</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>v_max</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="input_v_max"/>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>v_min</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="input_v_min"/>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="check_scalar_bar">
+       <property name="text">
+        <string>scale bar</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QLabel" name="label_5">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>260</y>
+      <width>101</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>available MOs</string>
+    </property>
+   </widget>
+   <widget class="QTabWidget" name="mo_tab">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>280</y>
+      <width>211</width>
+      <height>261</height>
+     </rect>
+    </property>
+    <property name="currentIndex">
+     <number>0</number>
+    </property>
+    <widget class="QWidget" name="tab_alpha">
+     <attribute name="title">
+      <string>alpha</string>
+     </attribute>
+     <widget class="QListView" name="mo_list">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>201</width>
+        <height>231</height>
+       </rect>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab_beta">
+     <attribute name="title">
+      <string>beta</string>
+     </attribute>
+     <widget class="QListView" name="mo_list_beta">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>201</width>
+        <height>231</height>
+       </rect>
+      </property>
+     </widget>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="layoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>240</x>
+      <y>510</y>
+      <width>331</width>
+      <height>36</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QProgressBar" name="progressBar">
+       <property name="styleSheet">
+        <string notr="true">
+            QProgressBar {
+                border: 2px solid grey;
+                border-radius: 5px;
+                text-align: center;
+            }
+            QProgressBar::chunk {
+                background-color: #05B8CC; /* Ein kräftiges Blau/Türkis */
+                width: 20px;
+            }
+</string>
+       </property>
+       <property name="value">
+        <number>0</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="abort">
+       <property name="text">
+        <string>abbort</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QPushButton" name="grid_settings">
+    <property name="geometry">
+     <rect>
+      <x>750</x>
+      <y>510</y>
+      <width>113</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Grid Settings</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>885</width>
+     <height>33</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuExport">
+    <property name="title">
+     <string>Export</string>
+    </property>
+    <addaction name="actionSave_Image"/>
+    <addaction name="separator"/>
+    <addaction name="action_export_povray"/>
+    <addaction name="action_export_blender"/>
+    <addaction name="separator"/>
+    <addaction name="action_export_Cube"/>
+    <addaction name="action_export_esp_cube"/>
+   </widget>
+   <widget class="QMenu" name="menuApp">
+    <property name="title">
+     <string>App</string>
+    </property>
+    <addaction name="actionLoad_MO_cube"/>
+    <addaction name="actionLoad_Dens_cube"/>
+    <addaction name="actionLoad_ESP_cube"/>
+    <addaction name="actionLoad_molden_file"/>
+    <addaction name="actionLoad_fchk_file"/>
+    <addaction name="separator"/>
+    <addaction name="actionQuit"/>
+   </widget>
+   <widget class="QMenu" name="menuDraw">
+    <property name="title">
+     <string>Draw</string>
+    </property>
+    <addaction name="action_draw_mo_cube"/>
+    <addaction name="action_draw_esp_cube"/>
+    <addaction name="separator"/>
+    <addaction name="action_draw_mo_molden"/>
+    <addaction name="action_draw_esp_molden"/>
+    <addaction name="action_draw_dens_molden"/>
+    <addaction name="action_draw_spin_dens"/>
+    <addaction name="action_draw_spin_mapped"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionHelp"/>
+   </widget>
+   <addaction name="menuApp"/>
+   <addaction name="menuDraw"/>
+   <addaction name="menuExport"/>
+   <addaction name="menuHelp"/>
+  </widget>
+  <action name="actioncube_file">
+   <property name="text">
+    <string>cube file</string>
+   </property>
+  </action>
+  <action name="actionESP_Dense_cube">
+   <property name="text">
+    <string>ESP/Dense cube</string>
+   </property>
+  </action>
+  <action name="actionmolden_file">
+   <property name="text">
+    <string>molden file</string>
+   </property>
+  </action>
+  <action name="action_export_povray">
+   <property name="text">
+    <string> povray inc</string>
+   </property>
+  </action>
+  <action name="actionimage">
+   <property name="text">
+    <string>image</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionExit_2">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionApp">
+   <property name="text">
+    <string>App</string>
+   </property>
+  </action>
+  <action name="actionExit_3">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionQuit">
+   <property name="text">
+    <string>Quit</string>
+   </property>
+  </action>
+  <action name="actionLoad_MO_cube">
+   <property name="text">
+    <string>Load MO cube</string>
+   </property>
+  </action>
+  <action name="actionSave_Image">
+   <property name="text">
+    <string>Save Image</string>
+   </property>
+  </action>
+  <action name="actionLoad_Dens_cube">
+   <property name="text">
+    <string>Load Dens cube</string>
+   </property>
+  </action>
+  <action name="actionLoad_ESP_cube">
+   <property name="text">
+    <string>Load ESP cube</string>
+   </property>
+  </action>
+  <action name="actionLoad_molden_file">
+   <property name="text">
+    <string>Load molden file</string>
+   </property>
+  </action>
+  <action name="action_draw_mo_cube">
+   <property name="text">
+    <string>MO/Dens cube</string>
+   </property>
+  </action>
+  <action name="action_draw_esp_cube">
+   <property name="text">
+    <string>ESP cube</string>
+   </property>
+  </action>
+  <action name="action_draw_mo_molden">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>MO molden</string>
+   </property>
+  </action>
+  <action name="action_draw_esp_molden">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>ESP molden</string>
+   </property>
+  </action>
+  <action name="action_export_cube">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>MO/Dens cube</string>
+   </property>
+  </action>
+  <action name="action_export_blender">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>blender glb</string>
+   </property>
+  </action>
+  <action name="action_draw_dens_molden">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>dens molden</string>
+   </property>
+  </action>
+  <action name="action_draw_spin_dens">
+   <property name="text">
+    <string>Spin dens molden</string>
+   </property>
+  </action>
+  <action name="action_draw_spin_mapped">
+   <property name="text">
+    <string>Spin dens mappend</string>
+   </property>
+  </action>
+  <action name="action_export_ESP_cube">
+   <property name="text">
+    <string>ESP cube</string>
+   </property>
+  </action>
+  <action name="actionLoad_fchk_file">
+   <property name="text">
+    <string>Load fchk file</string>
+   </property>
+  </action>
+  <action name="action_export_Cube">
+   <property name="text">
+    <string>MO/Dens Cube</string>
+   </property>
+  </action>
+  <action name="action_export_esp_cube">
+   <property name="text">
+    <string>ESP Cube</string>
+   </property>
+  </action>
+  <action name="actionLoad_wfn_file">
+   <property name="text">
+    <string>Load wfn file</string>
+   </property>
+  </action>
+  <action name="actionHelp">
+   <property name="text">
+    <string>Help</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
