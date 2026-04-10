@@ -27,6 +27,7 @@ end
 
 driver
  maxiter 500
+ xyz methylamine
 end
 
 # Task 1: Geometry Optimization
@@ -40,7 +41,7 @@ property
  grid pad 4.0 ngrid 20 output nw_esp.cube
 end
 
-# Task 4: Electrostatic Potential and analysis files
+# Task 3: Electrostatic Potential 
 task dft property
 
 property
@@ -49,7 +50,7 @@ property
  aimfile
 end
 
-# Task 3: Electrostatic Potential and analysis files
+# Task 4: Molden File 
 task dft property
 
 dplot

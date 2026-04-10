@@ -48,9 +48,9 @@ for further analysis.
 ├── requirements.txt      # Project dependencies
 ├── README.md             # Documentation
 ├── /examples             # examples
-    ├── ex1               # orca examples
-    ├── ex2               # NWChem examples
-    ├── ex3               # Psi-4 examples
+    ├── ex1               # orca example
+    ├── ex2               # NWChem example
+    ├── ex3               # Psi-4 example
 ├── /modules              # Core logic and UI components
 │   ├── draw.py           # functions required for plotting
 │   ├── export.py         # export routines
@@ -62,8 +62,21 @@ for further analysis.
     ├── ...               # screenshots
 
 ## Examples & Tutorials
-some molden and fchk input files can be found under examples as well as native cube
-files for comparison
+
+Ex1: Benzoic acid (B3LYP/6-31G)
+ORCA:
+F. Neese, "Software update: the ORCA program system — Version 6.0", Wiley Interdiscip. Rev.: Comput. Mol. Sci., 
+15, e70019 (2025). doi: 10.1002/wcms.70019.
+
+Ex2: Methylamine (B3LYP/6-31G)
+NWChem:
+E. Aprà, D. Mejía-Rodríguez, et al., "NWChem: Recent and Ongoing Developments", J. Chem. Theory Comput., 
+19, 7077–7096 (2023). doi: 10.1021/acs.jctc.3c00421. 
+
+Ex3: Allyl radical (UHF/cc-pVDZ)
+PSI-4:
+D. G. A. Smith, L. A. Burns, et al., "Psi4 1.4: Open-source software for high-throughput quantum chemistry", 
+J. Chem. Phys., 152, 184108 (2020). doi: 10.1063/5.0006002.
 
 ## Installation
 

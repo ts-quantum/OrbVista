@@ -139,33 +139,27 @@ class MoleculeData: #always call arguments by name!
     
     @classmethod
     def from_cube(cls, filepath):
+        bohr_to_angstrom = 0.529177
         fname = os.path.basename(filepath)
         reader=pv.get_reader(filepath)
         atoms = reader.read(grid=False)
         grid = reader.read(grid=True)
 
-         # 1. Raw Distance Measurement
         p0 = atoms.points[0]
-        p1 = atoms.points[1] # 
+        p1 = atoms.points[1] 
         raw_dist = np.linalg.norm(p0 - p1)
         bohr_to_ang = 0.529177
-        # 2. Logic switch for the scaling factor
         if 0.8 < raw_dist < 2.1:
-            # Case A: Data are already in Angstrom
             factor = 1.0
             print(f"Auto-Detect: Angström (Dist {raw_dist:.2f})")
         elif 2.2 < raw_dist < 4.0:
-            # Case B: Data are in Bohr (Standard)
             factor = bohr_to_ang
             print(f"Auto-Detect: Bohr (Dist {raw_dist:.2f})")
         else:
-            # Fall C: scaling artefact
             if raw_dist > 4.0:
                 factor = (2.76 * bohr_to_ang) / raw_dist 
             else:
                 factor = 1.0
-
-        # 3. Apply Scaling to all coordinates
         atoms.points = np.array(atoms.points) * factor
         if hasattr(grid, 'origin'):
             grid.origin = np.array(grid.origin) * factor
