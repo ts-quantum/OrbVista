@@ -4,10 +4,10 @@ import numpy as np
 import pyvista as pv
 from pathlib import Path
 from collections import defaultdict
-from pyscf import lib, dft, scf, df, gto
-import pyscf
-from qtpy.QtCore import QThread, Signal
-from draw import get_validated_dm
+#from pyscf import lib, dft, scf, df, gto
+#import pyscf
+from PySide6.QtCore import QThread, Signal
+from modules.draw import get_validated_dm
 
 def export_pov_header_mo(filename="test.inc", object_name="name", 
                        trans=0.66, color_pos="#F60505F3", 

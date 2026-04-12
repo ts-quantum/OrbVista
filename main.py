@@ -1,38 +1,43 @@
 import sys
 import os
-
-# 
+base_dir = os.path.dirname(sys.executable)
+if base_dir not in sys.path:
+    sys.path.insert(0, base_dir)
 os.environ["QT_API"] = "pyside6"
-#only in python3.12 environment: pyscf_prara
 
-from qtpy import QtWidgets, QtCore, uic, QtGui
+from PySide6 import QtWidgets, QtCore, QtGui
 from PySide6.QtWidgets import QApplication, QColorDialog, QFileDialog
 from PySide6.QtWidgets import QDialog, QTextEdit, QVBoxLayout
 from PySide6.QtGui import QColor
 from PySide6.QtCore import QStringListModel, Qt
+from PySide6.QtCore import QThread
 import pyvista as pv
 from pyvistaqt import QtInteractor 
+import matplotlib
+matplotlib.use('QtAgg')
 import matplotlib.pyplot as plt
 from matplotlib import colormaps
 import numpy as np
 import pyscf.tools.molden as molden_tools
-from pyscf import data
+from pyscf import data, lib, gto
 from cclib.io import ccread
 from collections import defaultdict
 import vtk
 import time, platform, subprocess
 
-sys.path.insert(1,'./modules')
-from export import *
-from draw import *
-from draw import ESPWorkerThread
-from export import CubeWorkerThread
+from modules.export import (export_pov_colorbar, export_pov_esp, export_pov_mol, export_pov_header_esp,
+                            export_pov_header_mo, export_pov_header_mol, export_pov_header_spin,
+                            export_pov_header_spin_mapped, export_pov_mo, save_cube, save_xyz)
+from modules.draw import (draw_dens, draw_esp, draw_mol, draw_orb_molden, draw_orb, draw_spin,
+                          draw_spin_mapped, prep_esp_molden)
+from modules.draw import ESPWorkerThread
+from modules.export import CubeWorkerThread
 
-class GridSettingsDialog(QtWidgets.QDialog):
+from modules.grid import Ui_Grid_settings
+class GridSettingsDialog(QtWidgets.QDialog, Ui_Grid_settings):
     def __init__(self, parent, nx, ny, nz, padding, iso, iso_m):
         super().__init__(parent)
-        uic.loadUi("modules/grid.ui", self)
-        
+        self.setupUi(self) 
         # current values from main app are written to UI fields
         self.edit_nx.setText(str(nx))
         self.edit_ny.setText(str(ny))
@@ -80,6 +85,27 @@ class HelpWindow(QDialog):
                 return f.read()
         return "<h1>Manual file not found.</h1>"
 
+class CreditsWindow(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("OrbVista Credits")
+        self.resize(600, 400)
+        layout = QVBoxLayout(self)
+        
+        self.text_area = QTextEdit()
+        self.text_area.setReadOnly(True)
+
+        help_text_html = self.load_help_content()
+        self.text_area.setHtml(help_text_html) 
+        layout.addWidget(self.text_area)
+
+    def load_help_content(self):
+        file_path = os.path.join(os.path.dirname(__file__), "./modules/credits.html")
+        if os.path.exists(file_path):
+            with open(file_path, "r", encoding="utf-8") as f:
+                return f.read()
+        return "<h1>Credits file not found.</h1>"
+    
 class ColormapDelegate(QtWidgets.QStyledItemDelegate):
     def paint(self, painter, option, index):
         # Basic Options (Background, Focus)
@@ -144,26 +170,9 @@ class MoleculeData: #always call arguments by name!
         reader=pv.get_reader(filepath)
         atoms = reader.read(grid=False)
         grid = reader.read(grid=True)
-
-        p0 = atoms.points[0]
-        p1 = atoms.points[1] 
-        raw_dist = np.linalg.norm(p0 - p1)
-        bohr_to_ang = 0.529177
-        if 0.8 < raw_dist < 2.1:
-            factor = 1.0
-            print(f"Auto-Detect: Angström (Dist {raw_dist:.2f})")
-        elif 2.2 < raw_dist < 4.0:
-            factor = bohr_to_ang
-            print(f"Auto-Detect: Bohr (Dist {raw_dist:.2f})")
-        else:
-            if raw_dist > 4.0:
-                factor = (2.76 * bohr_to_ang) / raw_dist 
-            else:
-                factor = 1.0
-        atoms.points = np.array(atoms.points) * factor
-        if hasattr(grid, 'origin'):
-            grid.origin = np.array(grid.origin) * factor
-            grid.spacing = np.array(grid.spacing) * factor
+        atoms.points *= bohr_to_angstrom
+        grid.origin = [x * bohr_to_angstrom for x in grid.origin]
+        grid.spacing = [s * bohr_to_angstrom for s in grid.spacing]
         atom_points = atoms.points
         atom_types = atoms.point_data["atom_type"].astype(int) + 1
         return cls(
@@ -171,7 +180,7 @@ class MoleculeData: #always call arguments by name!
             atoms=atoms,
             atom_points=atom_points,
             atom_types=atom_types,
-            grid=grid) 
+            grid=grid)
 
     @classmethod
     def from_molden(cls, filepath):
@@ -275,7 +284,7 @@ class MoleculeData: #always call arguments by name!
             spin=mol.spin
         )
 
-from gui_ui import Ui_MainWindow # import gui_ui.py
+from modules.gui_ui import Ui_MainWindow # import gui_ui.py
 class MoleculeApp(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
@@ -344,6 +353,7 @@ class MoleculeApp(QtWidgets.QMainWindow, Ui_MainWindow):
         self.action_export_esp_cube.triggered.connect(self.export_esp_cube)
 
         self.actionHelp.triggered.connect(self.show_help)
+        self.actionCredits.triggered.connect(self.credits)
 
         self.abort.clicked.connect(self.abort_esp)
 
@@ -493,6 +503,12 @@ class MoleculeApp(QtWidgets.QMainWindow, Ui_MainWindow):
             self.help_win = HelpWindow(self)
         self.help_win.show()
         self.help_win.raise_()
+
+    def credits(self):
+        if not hasattr(self, 'credits_win'):
+            self.credits_win = CreditsWindow(self)
+        self.credits_win.show()
+        self.credits_win.raise_()
 
     def show_grid_settings(self):
         # current values in main app are handed over to grid_settings dialog
@@ -1080,7 +1096,6 @@ class MoleculeApp(QtWidgets.QMainWindow, Ui_MainWindow):
                     f'image', 
                     "Image (*.png)"
                     )
-        print(path)
         self.plotter.screenshot(path)
 
 # ---- EXPORT -----

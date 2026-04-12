@@ -1,0 +1,65 @@
+============================================================
+OrbVista - Credits & Licenses
+============================================================
+
+OrbVista is a comprehensive 3D visualization and analysis 
+suite for quantum chemical data, supporting MO, ESP, and 
+Spin-Density analysis with advanced export capabilities.
+
+This application is provided as open-source software. 
+It bundles several third-party libraries, each governed 
+by their own licenses:
+
+CORE QUANTUM CHEMISTRY & DATA:
+------------------------------------------------------------
+1. PySCF (Apache License 2.0)
+   https://pyscf.org
+   (Used for SCF, DFT, and GTO orbital calculations)
+
+2. cclib (BSD 3-Clause License)
+   https://github.io
+   (Used for parsing quantum chemical log files)
+
+3. h5py (BSD License)
+   https://h5py.org
+   (Used for efficient HDF5 data management)
+
+4. NumPy & SciPy (BSD License)
+   https://numpy.org | https://scipy.org
+
+GRAPHICS & USER INTERFACE:
+------------------------------------------------------------
+5. PySide6 (GNU LGPL v3)
+   https://qt.io
+
+6. PyVista & VTK (MIT / BSD License)
+   https://pyvista.org | https://vtk.org
+   (Core 3D rendering engine and mesh processing)
+
+7. PyVistaQT (MIT License)
+   https://github.com
+
+8. Matplotlib (PSF/BSD compatible)
+   https://matplotlib.org
+
+UTILITIES:
+------------------------------------------------------------
+9. psutil (BSD License)
+   https://github.com
+
+10. Click (BSD License)
+    https://palletsprojects.com
+
+------------------------------------------------------------
+DISTRIBUTION & SOURCE CODE:
+The source code for this application is available at:
+https://github.com/ts-quantum/OrbVista
+
+LEGAL DISCLAIMER:
+THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY 
+KIND, EXPRESS OR IMPLIED. IN NO EVENT SHALL THE AUTHORS OR 
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR 
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+============================================================

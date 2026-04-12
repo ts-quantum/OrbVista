@@ -280,6 +280,7 @@
      <string>Help</string>
     </property>
     <addaction name="actionHelp"/>
+    <addaction name="actionCredits"/>
    </widget>
    <addaction name="menuApp"/>
    <addaction name="menuDraw"/>
@@ -449,6 +450,11 @@
   <action name="actionHelp">
    <property name="text">
     <string>Help</string>
+   </property>
+  </action>
+  <action name="actionCredits">
+   <property name="text">
+    <string>Credits</string>
    </property>
   </action>
  </widget>

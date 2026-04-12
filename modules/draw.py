@@ -1,9 +1,7 @@
-
 import pyvista as pv
 pv.global_theme.allow_empty_mesh = True
 import numpy as np
-from pyscf import lib, dft, scf, df, gto
-import pyscf
+from pyscf import lib, dft, scf 
 from PySide6.QtCore import QThread, Signal
 
 # Molecule Structure Drawing

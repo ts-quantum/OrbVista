@@ -92,6 +92,8 @@ class Ui_MainWindow(object):
         self.actionLoad_wfn_file.setObjectName(u"actionLoad_wfn_file")
         self.actionHelp = QAction(MainWindow)
         self.actionHelp.setObjectName(u"actionHelp")
+        self.actionCredits = QAction(MainWindow)
+        self.actionCredits.setObjectName(u"actionCredits")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.plot_widget = QWidget(self.centralwidget)
@@ -243,6 +245,7 @@ class Ui_MainWindow(object):
         self.menuDraw.addAction(self.action_draw_spin_dens)
         self.menuDraw.addAction(self.action_draw_spin_mapped)
         self.menuHelp.addAction(self.actionHelp)
+        self.menuHelp.addAction(self.actionCredits)
 
         self.retranslateUi(MainWindow)
 
@@ -284,6 +287,7 @@ class Ui_MainWindow(object):
         self.action_export_esp_cube.setText(QCoreApplication.translate("MainWindow", u"ESP Cube", None))
         self.actionLoad_wfn_file.setText(QCoreApplication.translate("MainWindow", u"Load wfn file", None))
         self.actionHelp.setText(QCoreApplication.translate("MainWindow", u"Help", None))
+        self.actionCredits.setText(QCoreApplication.translate("MainWindow", u"Credits", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"available files", None))
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"Opacity %", None))
         self.input_opacity.setText(QCoreApplication.translate("MainWindow", u"50", None))
