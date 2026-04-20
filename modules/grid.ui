@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Grid Settings</string>
   </property>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>0</x>
@@ -85,7 +85,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>270</x>
@@ -110,6 +110,22 @@
      </widget>
     </item>
    </layout>
+  </widget>
+  <widget class="QLabel" name="label_7">
+   <property name="geometry">
+    <rect>
+     <x>270</x>
+     <y>10</y>
+     <width>101</width>
+     <height>71</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Re-Plot required to see changes </string>
+   </property>
+   <property name="wordWrap">
+    <bool>true</bool>
+   </property>
   </widget>
  </widget>
  <resources/>

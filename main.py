@@ -57,9 +57,9 @@ class GridSettingsDialog(QtWidgets.QDialog, Ui_Grid_settings):
                 int(self.edit_nx.text()),
                 int(self.edit_ny.text()),
                 int(self.edit_nz.text()),
-                int(self.edit_padding.text()),
-                int(self.edit_iso.text()),
-                int(self.edit_iso_m.text())
+                float(self.edit_padding.text()),
+                float(self.edit_iso.text()),
+                float(self.edit_iso_m.text())
             )
         except ValueError:
             return None
@@ -513,14 +513,14 @@ class MoleculeApp(QtWidgets.QMainWindow, Ui_MainWindow):
     def show_grid_settings(self):
         # current values in main app are handed over to grid_settings dialog
         dialog = GridSettingsDialog(self, self.nx, self.ny, self.nz, self.padding, self.iso_value, self.iso_value_m)
-        
         # User clicks 'Apply':
         if dialog.exec_() == QtWidgets.QDialog.Accepted:
             new_data = dialog.get_values()
             if new_data:
                 # new values are handed over to main app
-                self.nx, self.ny, self.nz, self.padding, self.iso_value, self.iso_vaulue_m = new_data
-
+                self.nx, self.ny, self.nz, self.padding, self.iso_value, self.iso_value_m = new_data
+                print(new_data)
+   
 # change color by right click
     def _on_right_click(self, interactor=None, event=None):
         # 1. Set Zoom Factor to 0 
