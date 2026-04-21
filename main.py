@@ -27,7 +27,8 @@ import time, platform, subprocess
 
 from modules.export import (export_pov_colorbar, export_pov_esp, export_pov_mol, export_pov_header_esp,
                             export_pov_header_mo, export_pov_header_mol, export_pov_header_spin,
-                            export_pov_header_spin_mapped, export_pov_mo, save_cube, save_xyz)
+                            export_pov_header_spin_mapped, export_pov_mo, create_3d_colorbar_group,
+                            save_cube, save_xyz)
 from modules.draw import (draw_dens, draw_esp, draw_mol, draw_orb_molden, draw_orb, draw_spin,
                           draw_spin_mapped, prep_esp_molden)
 from modules.draw import ESPWorkerThread
@@ -1194,7 +1195,47 @@ class MoleculeApp(QtWidgets.QMainWindow, Ui_MainWindow):
                     "molecule_scene", 
                     "glTF Binary (*.glb);;glTF JSON (*.gltf)"
                     )
+        cb_group = None
+        selection = self.file_list.selectionModel().selectedIndexes()
+        items = [index.data() for index in selection]
+        if len(items) == 1:
+            data_ = self.dataset_dict.get(items[0])
+            match data_.type:
+                case "molden":
+                    if hasattr(self, "current_mode"):
+                        match self.current_mode:
+                            case "esp" | "spin-mapped":
+                                cb_group = create_3d_colorbar_group(self.v_min, self.v_max, self.current_mode, self.cmap)
+                                for mesh, base_name, kwargs in cb_group:
+                                    self.plotter.add_mesh(mesh, name=f"{base_name}_emit", **kwargs)
+
+        elif len(items) ==2:  # esp cube
+            data_1=self.dataset_dict.get(items[0])
+            data_2=self.dataset_dict.get(items[1])
+            if {data_1.type, data_2.type} == {"dens_cube", "esp_cube"}:  
+                cb_group = create_3d_colorbar_group(self.v_min, self.v_max, "esp", self.cmap)
+                for mesh, base_name, kwargs in cb_group:
+                    self.plotter.add_mesh(mesh, name=f"{base_name}_emit", **kwargs)
+
         self.plotter.export_gltf(path)
+
+        if len(items) == 1:
+            data_ = self.dataset_dict.get(items[0])
+            match data_.type:
+                case "molden":
+                    if hasattr(self, "current_mode"):
+                        match self.current_mode:
+                            case "esp" | "spin-mapped":
+                                for _, base_name, _ in cb_group:
+                                    self.plotter.remove_mesh(f"{base_name}_emit")
+
+        elif len(items) ==2:  # esp cube
+            data_1=self.dataset_dict.get(items[0])
+            data_2=self.dataset_dict.get(items[1])
+            if {data_1.type, data_2.type} == {"dens_cube", "esp_cube"}:  
+                for _, base_name, _ in cb_group:
+                    self.plotter.remove_mesh(f"{base_name}_emit")
+
 
     def export_cube(self):
         path, _ = QFileDialog.getSaveFileName(

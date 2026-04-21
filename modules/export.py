@@ -376,6 +376,59 @@ def export_pov_esp(mesh, filename="test.inc", object_name="name",
 }}
         """)
 
+###### BLENDER SCALEBAR ######
+def create_3d_colorbar_group(v_min, v_max, mode="esp", cmap_name="rainbow", height=1.5, width=0.15):
+    """
+    Creates a compact 3D colorbar. 
+    Height reduced from 3.0 to 1.5, width from 0.3 to 0.15.
+    """
+    visuals = [] 
+    
+    # 1. Rectangular Bar
+    # Position shifted closer to the center (x=3.5 instead of 5)
+    cb_poly = pv.Plane(center=(3.5, 0.0, 0.0), direction=(1, 0, 0), 
+                       i_size=width, j_size=height)
+    
+    y_min, y_max = np.min(cb_poly.points[:, 1]), np.max(cb_poly.points[:, 1])
+    norm_values = np.interp(cb_poly.points[:, 1], (y_min, y_max), (v_min, v_max))
+    cb_poly.point_data["cb_scalars"] = norm_values
+    
+    # Material name 'emit_scale' helps us identify it in Blender for emission setup
+    visuals.append((cb_poly, "scale_bar_emit", {
+        "scalars": "cb_scalars", 
+        "cmap": cmap_name, 
+        "clim": [v_min, v_max]
+    }))
+
+    # 2. Labels (Smaller text)
+    label_args = {"color": "white", "smooth_shading": True}
+    text_scale = 0.12  # Reduced from 0.25
+    text_depth = 0.02
+    
+    # v_min Label (bottom)
+    txt_min = pv.Text3D(f"{v_min:.2f}", depth=text_depth)
+    txt_min.scale(text_scale)
+    # Positions adjusted for smaller height
+    txt_min.translate([3.7, -height/2, 0])
+    visuals.append((txt_min, "lbl_min_emit", label_args))
+    
+    # v_max Label (top)
+    txt_max = pv.Text3D(f"{v_max:.2f}", depth=text_depth)
+    txt_max.scale(text_scale)
+    txt_max.translate([3.7, height/2 - 0.1, 0])
+    visuals.append((txt_max, "lbl_max_emit", label_args))
+    
+    # Title (above)
+    title_str = "ESP [a.u.]" if mode == "esp" else "Spin [a.u.]"
+    txt_title = pv.Text3D(title_str, depth=text_depth)
+    txt_title.scale(text_scale * 1.2)
+    txt_title.translate([3.4, height/2 + 0.2, 0])
+    visuals.append((txt_title, "lbl_title_emit", label_args))
+    
+    return visuals
+
+
+
 ##### CUBE EXPORT ##########
 
 def save_cube(filename, mol, data_grid, nx=50, ny=50, nz=50, comment="Density"):
