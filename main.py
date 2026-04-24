@@ -520,7 +520,6 @@ class MoleculeApp(QtWidgets.QMainWindow, Ui_MainWindow):
             if new_data:
                 # new values are handed over to main app
                 self.nx, self.ny, self.nz, self.padding, self.iso_value, self.iso_value_m = new_data
-                print(new_data)
    
 # change color by right click
     def _on_right_click(self, interactor=None, event=None):
