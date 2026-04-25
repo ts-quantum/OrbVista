@@ -1,9 +1,46 @@
-import sys
-import os
-base_dir = os.path.dirname(sys.executable)
-if base_dir not in sys.path:
-    sys.path.insert(0, base_dir)
-os.environ["QT_API"] = "pyside6"
+import sys, os, platform
+# macOS (Apple Silicon Check)
+if platform.system() == "Darwin":
+    base_dir = os.path.dirname(sys.executable)
+    if base_dir not in sys.path:
+        sys.path.insert(0, base_dir)
+    os.environ["QT_API"] = "pyside6"
+    import pyvista as pv
+    import vtk
+else: #Linux
+    os.environ.update({
+        "QT_QPA_PLATFORM": "xcb",
+        "MESA_DEBUG": "silent",
+        "LIBGL_DEBUG": "quiet",
+        "VTK_SILENT": "1"
+    })
+    # 1. Define the path to the local conda environment (relative to script location)
+    # Assumes 'env' is located in the parent directory of this script
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    env_path = os.path.abspath(os.path.join(script_dir, "..", "env"))
+    # 2. Dynamically locate the Qt plugin directory 
+    # (Paths can vary between 'lib/qt6' and 'lib/qt' depending on architecture/channel)
+    qt_plugin_path = os.path.join(env_path, "lib", "qt6", "plugins")
+    if not os.path.exists(qt_plugin_path):
+        qt_plugin_path = os.path.join(env_path, "lib", "qt", "plugins")
+    # 3. Force the application to use the plugins from the local environment
+    # This prevents conflicts with system-wide Qt installations (especially on Linux)
+    os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = os.path.join(qt_plugin_path, "platforms")
+    os.environ["QT_PLUGIN_PATH"] = qt_plugin_path
+    # 4. Explicitly set the Qt API for PyVista and PySide6
+    # This resolves TypeErrors when mixing different Qt bindings (e.g., PyQt vs PySide)
+    os.environ["QT_API"] = "pyside6"
+    os.environ["PYVISTA_QT_API"] = "pyside6"
+    # 5. Optional: Force X11 (xcb) on Linux to ensure stability across Wayland/X11 sessions
+    os.environ["QT_QPA_PLATFORM"] = "xcb"
+    # allows for rendering of OpenGL in QtWidgets under Linux/X11
+    QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_ShareOpenGLContexts)
+    QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_UseDesktopOpenGL)
+    import pyvista as pv
+    import vtk
+    pv.global_theme.multi_samples = 0
+    vtk.vtkObject.GlobalWarningDisplayOff()
+    vtk.vtkLogger.SetStderrVerbosity(vtk.vtkLogger.VERBOSITY_OFF)
 
 from PySide6 import QtWidgets, QtCore, QtGui
 from PySide6.QtWidgets import QApplication, QColorDialog, QFileDialog
@@ -11,7 +48,6 @@ from PySide6.QtWidgets import QDialog, QTextEdit, QVBoxLayout
 from PySide6.QtGui import QColor
 from PySide6.QtCore import QStringListModel, Qt
 from PySide6.QtCore import QThread
-import pyvista as pv
 from pyvistaqt import QtInteractor 
 import matplotlib
 matplotlib.use('QtAgg')
@@ -22,8 +58,7 @@ import pyscf.tools.molden as molden_tools
 from pyscf import data, lib, gto
 from cclib.io import ccread
 from collections import defaultdict
-import vtk
-import time, platform, subprocess
+import time, subprocess
 
 from modules.export import (export_pov_colorbar, export_pov_esp, export_pov_mol, export_pov_header_esp,
                             export_pov_header_mo, export_pov_header_mol, export_pov_header_spin,
@@ -1301,9 +1336,11 @@ if __name__ == '__main__':
         print(f"Could not set Threads automatically: {e}")
 
     window = MoleculeApp()
-    window.show()   
-    # macOS Fokus-Fix
-    window.raise_()
-    window.activateWindow()
+    window.show() 
+
+    if platform.system() == "Darwin":
+        # macOS Fokus-Fix
+        window.raise_()
+        window.activateWindow()
     
     sys.exit(app.exec())
