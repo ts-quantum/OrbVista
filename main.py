@@ -1,12 +1,13 @@
 import sys, os, platform
 # macOS (Apple Silicon Check)
+import pyvista as pv
+import vtk
 if platform.system() == "Darwin":
     base_dir = os.path.dirname(sys.executable)
     if base_dir not in sys.path:
         sys.path.insert(0, base_dir)
     os.environ["QT_API"] = "pyside6"
-    import pyvista as pv
-    import vtk
+    
 else: #Linux
     os.environ.update({
         "QT_QPA_PLATFORM": "xcb",
@@ -34,13 +35,13 @@ else: #Linux
     # 5. Optional: Force X11 (xcb) on Linux to ensure stability across Wayland/X11 sessions
     os.environ["QT_QPA_PLATFORM"] = "xcb"
     # allows for rendering of OpenGL in QtWidgets under Linux/X11
+    from PySide6 import QtCore
     QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_ShareOpenGLContexts)
     QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_UseDesktopOpenGL)
-    import pyvista as pv
-    import vtk
     pv.global_theme.multi_samples = 0
     vtk.vtkObject.GlobalWarningDisplayOff()
     vtk.vtkLogger.SetStderrVerbosity(vtk.vtkLogger.VERBOSITY_OFF)
+    import psutil
 
 from PySide6 import QtWidgets, QtCore, QtGui
 from PySide6.QtWidgets import QApplication, QColorDialog, QFileDialog
