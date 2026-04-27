@@ -17,8 +17,7 @@ results and publication-quality rendering.
   - Dedicated **Grid Settings** for on-the-fly volumetric calculations.
 - **High-End Export**: 
   - **POV-Ray**: Generates detailed `.inc` files for ray-traced imagery.
-  - **Blender**: Exports `.glb` files with automated import scripts for cinematic 
-    animations.
+  - **Blender**: Exports `.glb` along with colorbar for ESP and Spin-Density mapping
   - **Analysis**: Save calculated grids back to `.cube` format (including synchronized 
     `.xyz` for ChimeraX).
 
@@ -37,8 +36,8 @@ results and publication-quality rendering.
 1. **Load**: Import your `molden` or `fchk` file via `App -> Load`.
 2. **Calculate**: Select the desired property (e.g., `Draw -> ESP molden`).
 3. **Analyze**: Adjust the isosurface and colormap (e.g., `turbo`, `hsv`, `coolwarm`).
-4. **Export**: Use `Export -> POV-Ray` for professional rendering or `Export -> MO Cube` 
-for further analysis.
+4. **Export**: Use `Export -> POV-Ray` or Èxport -> Blender' for professional rendering 
+or `Export -> MO Cube` for further analysis.
 
 ## Project Structure
 

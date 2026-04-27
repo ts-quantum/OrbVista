@@ -1,0 +1,69 @@
+Title "methylamine opt, freq, and properties"
+
+start job 
+memory 10000 mb
+permanent_dir ./
+scratch_dir ./scr
+
+geometry
+ C     0.000000     0.000000     0.000000
+ H     0.000000     0.000000     1.089000
+ H     1.026720     0.000000    -0.362996
+ N    -0.688251    -1.192085    -0.486667
+ H    -0.513360     0.889165    -0.363000
+ H    -0.688251    -1.192085    -1.516667
+ H    -0.202704    -2.033076    -0.143333
+end
+
+basis
+ * library 6-31G
+end
+
+dft
+ xc b3lyp
+ iterations 500
+ mulliken
+end
+
+driver
+ maxiter 500
+ xyz methylamine
+end
+
+# Task 1: Geometry Optimization
+task dft optimize
+
+# Task 2: Vibrational Frequencies (Verify minimum & Thermal data)
+task dft freq
+
+property
+ esp
+ grid pad 4.0 ngrid 20 output nw_esp.cube
+end
+
+# Task 3: Electrostatic Potential 
+task dft property
+
+property
+ moldenfile
+ molden_norm none
+ aimfile
+end
+
+# Task 4: Molden File 
+task dft property
+
+dplot
+ TITLE dens
+  LimitXYZ
+  -4.0 4.0 20
+  -4.0 4.0 20
+  -4.0 4.0 20
+ spin total
+ gaussian
+ output nw_dens.cube
+end
+
+# Task 5: Electron Density Cube Map
+task dplot
+

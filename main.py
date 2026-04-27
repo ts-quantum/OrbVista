@@ -44,7 +44,7 @@ else: #Linux
     import psutil
 
 from PySide6 import QtWidgets, QtCore, QtGui
-from PySide6.QtWidgets import QApplication, QColorDialog, QFileDialog
+from PySide6.QtWidgets import QApplication, QColorDialog, QFileDialog, QMessageBox
 from PySide6.QtWidgets import QDialog, QTextEdit, QVBoxLayout
 from PySide6.QtGui import QColor
 from PySide6.QtCore import QStringListModel, Qt
@@ -845,13 +845,19 @@ class MoleculeApp(QtWidgets.QMainWindow, Ui_MainWindow):
                 actor._is_orbital = True
                 actor._orbital_index = i 
                 self.orb_mesh.append(mesh)
+        else:
+            QMessageBox.information(self, "Plot", f"selected data type:'{data.type}' is not allowed for MO/Dens Cube Plot ")
     
     def draw_esp_cube(self):
         self.plotter.clear_actors()
         selection = self.file_list.selectionModel().selectedIndexes()
         items = [index.data() for index in selection]
-        data_1=self.dataset_dict.get(items[0])
-        data_2=self.dataset_dict.get(items[1])
+        try:
+            data_1=self.dataset_dict.get(items[0])
+            data_2=self.dataset_dict.get(items[1])
+        except Exception as e:
+            QMessageBox.information(self, "Error", f"Error '{str(e)}', please select one dens and one esp cube")
+            return
         #exactly one dens_cube and esp_cube
         if {data_1.type, data_2.type} == {"dens_cube", "esp_cube"}:
             dens_data=next(d for d in [data_1, data_2] if d.type == "dens_cube")
@@ -866,75 +872,80 @@ class MoleculeApp(QtWidgets.QMainWindow, Ui_MainWindow):
                                             grid_esp=esp_data.grid,iso_val=0.002)
             mesh_args = self.prep_esp(vmin, vmax, esp_mesh, active_scalar)
             self.ESP_mesh = self.plotter.add_mesh(**mesh_args)
+        else:
+            QMessageBox.information(self, "Plot", f"selected data types:'{data_1.type}' and '{data_2.type}' are not allowed for ESP Cube Plot ")
 
     def draw_mo_molden(self):
         self.plotter.clear_actors()
         self.orb_mesh = []
         index = self.file_list.currentIndex()
         data_ = self.dataset_dict.get(index.data())
-        # draw molecule structure
-        visual_objects = draw_mol(data_.atom_points, data_.atom_types, 
-                                  self.cpk_colors,self.cov_radii, self.default_radius,)
-        for mesh, args in visual_objects:
-            self.plotter.add_mesh(mesh, smooth_shading=True, **args)
-        # plot mo
-        tab = self.mo_tab.currentIndex()
-        index = self.mo_views[tab].currentIndex()
-        if index.isValid():
-            orbital_index = index.row()
-        else:  # nothing selected
-            is_unrestricted = isinstance(data_.mo_occ,(list, tuple))
-            if is_unrestricted:  # UKS/UHF
-                current_occ = data_.mo_occ[tab]
-                orbital_index = max([i for i, occ in enumerate(current_occ) if occ > 0.5], default=0)
-            else: # closed shell
-                orbital_index = int(sum(data_.mo_occ)/2)-1 #select HOMO
-            new_model_index = self.mo_views[tab].model().index(orbital_index, 0)
-            self.mo_views[tab].setCurrentIndex(new_model_index)
-        raw_text = self.input_opacity.text()
-        if raw_text: 
-                try:
-                    opac = float(raw_text) / 100
-                except ValueError:
-                    opac = 0.4
-                    self.input_opacity.setText("40") 
-        mesh_args={
-                "opacity":opac, 
-                "pbr":True,            # activate PBR 
-                #"metallic":0.5,        # Metallic
-                "roughness":0.3,       # Gloss-factor
-                "smooth_shading":True
-            }
-        visual_objects_raw, self.grid = draw_orb_molden(data_, orbital_index=orbital_index, 
-                 spin_idx=tab, iso_level=self.iso_value, nx=self.nx, ny=self.ny, nz=self.nz, padding=self.padding)  
+        if data_.type in {"molden", "fchk"}:
+            # draw molecule structure
+            visual_objects = draw_mol(data_.atom_points, data_.atom_types, 
+                                    self.cpk_colors,self.cov_radii, self.default_radius,)
+            for mesh, args in visual_objects:
+                self.plotter.add_mesh(mesh, smooth_shading=True, **args)
+            # plot mo
+            tab = self.mo_tab.currentIndex()
+            index = self.mo_views[tab].currentIndex()
+            if index.isValid():
+                orbital_index = index.row()
+            else:  # nothing selected
+                is_unrestricted = isinstance(data_.mo_occ,(list, tuple))
+                if is_unrestricted:  # UKS/UHF
+                    current_occ = data_.mo_occ[tab]
+                    orbital_index = max([i for i, occ in enumerate(current_occ) if occ > 0.5], default=0)
+                else: # closed shell
+                    orbital_index = int(sum(data_.mo_occ)/2)-1 #select HOMO
+                new_model_index = self.mo_views[tab].model().index(orbital_index, 0)
+                self.mo_views[tab].setCurrentIndex(new_model_index)
+            raw_text = self.input_opacity.text()
+            if raw_text: 
+                    try:
+                        opac = float(raw_text) / 100
+                    except ValueError:
+                        opac = 0.4
+                        self.input_opacity.setText("40") 
+            mesh_args={
+                    "opacity":opac, 
+                    "pbr":True,            # activate PBR 
+                    #"metallic":0.5,        # Metallic
+                    "roughness":0.3,       # Gloss-factor
+                    "smooth_shading":True
+                }
+            visual_objects_raw, self.grid = draw_orb_molden(data_, orbital_index=orbital_index, 
+                    spin_idx=tab, iso_level=self.iso_value, nx=self.nx, ny=self.ny, nz=self.nz, padding=self.padding)  
 
-        if hasattr(visual_objects_raw, "n_blocks"):
-        # It is a MultiBlock -> convert to a list of meshes.
-            visual_objects = [visual_objects_raw[i] for i in range(visual_objects_raw.n_blocks)]
-        else:
-        # It is already a list or another iterable
-            visual_objects = list(visual_objects_raw)
-
-        for i, item in enumerate(visual_objects):
-            # If draw_orb_molden returns a tuple (mesh, args):
-            if isinstance(item, tuple):
-                mesh, args = item
+            if hasattr(visual_objects_raw, "n_blocks"):
+            # It is a MultiBlock -> convert to a list of meshes.
+                visual_objects = [visual_objects_raw[i] for i in range(visual_objects_raw.n_blocks)]
             else:
-                # If it is the mesh itself:
-                mesh = item
-                args = {}
-            # first mesh is positive orbital lobe
-            current_color = self.color_pos if i == 0 else self.color_neg
-            clean_args = args.copy() if args else {}
-            clean_args.pop('color', None)
-            actor = self.plotter.add_mesh(mesh, 
-                                          color=current_color, 
-                                          **mesh_args, **clean_args)
-            actor._is_orbital = True
-            actor._orbital_index = i 
-            self.orb_mesh.append(mesh)
-            self.current_mode = "orbital"
-        self.plotter.render()
+            # It is already a list or another iterable
+                visual_objects = list(visual_objects_raw)
+
+            for i, item in enumerate(visual_objects):
+                # If draw_orb_molden returns a tuple (mesh, args):
+                if isinstance(item, tuple):
+                    mesh, args = item
+                else:
+                    # If it is the mesh itself:
+                    mesh = item
+                    args = {}
+                # first mesh is positive orbital lobe
+                current_color = self.color_pos if i == 0 else self.color_neg
+                clean_args = args.copy() if args else {}
+                clean_args.pop('color', None)
+                actor = self.plotter.add_mesh(mesh, 
+                                            color=current_color, 
+                                            **mesh_args, **clean_args)
+                actor._is_orbital = True
+                actor._orbital_index = i 
+                self.orb_mesh.append(mesh)
+                self.current_mode = "orbital"
+            self.plotter.render()
+        else:
+            QMessageBox.information(self, "Plot", f"selected data type:'{data_.type}' is not allowed for MO Plot ")
 
     def draw_dens_molden(self):
         self.plotter.clear_actors()
@@ -948,79 +959,84 @@ class MoleculeApp(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.input_opacity.setText("50")
         index = self.file_list.currentIndex()
         data_ = self.dataset_dict.get(index.data())
-        # draw molecule structure
-        visual_objects = draw_mol(data_.atom_points, data_.atom_types,
-                                self.cpk_colors, self.cov_radii, self.default_radius)
-        for mesh, args in visual_objects:
-            self.plotter.add_mesh(mesh, smooth_shading=True, **args)
-        # plot dens
-        mesh_args={
-            "opacity":opac, 
-            "pbr":True,            # PBR aktivieren
-            #"metallic":0.5,        # Metall-Effekt
-            "roughness":0.3,       # Glanz-Faktor
-            "smooth_shading":True
-            }
-        visual_objects_raw, self.grid = draw_dens(data_, iso_val=self.iso_value_m, 
-                        nx=self.nx, ny=self.ny, nz=self.nz, padding=self.padding)
-        if hasattr(visual_objects_raw, "n_blocks"):
-        # Es ist ein MultiBlock -> in Liste von Meshes umwandeln
-            visual_objects = [visual_objects_raw[i] for i in range(visual_objects_raw.n_blocks)]
-        else:
-        # Es ist bereits eine Liste oder ein anderes iterierbares Objekt
-            visual_objects = list(visual_objects_raw)
-
-        for i, item in enumerate(visual_objects):
-            # Falls draw_orb_molden Tupel (mesh, args) zurückgibt:
-            if isinstance(item, tuple):
-                mesh, args = item
+        if data_.type in {"molden", "fchk"}:
+            # draw molecule structure
+            visual_objects = draw_mol(data_.atom_points, data_.atom_types,
+                                    self.cpk_colors, self.cov_radii, self.default_radius)
+            for mesh, args in visual_objects:
+                self.plotter.add_mesh(mesh, smooth_shading=True, **args)
+            # plot dens
+            mesh_args={
+                "opacity":opac, 
+                "pbr":True,            # PBR aktivieren
+                #"metallic":0.5,        # Metall-Effekt
+                "roughness":0.3,       # Glanz-Faktor
+                "smooth_shading":True
+                }
+            visual_objects_raw, self.grid = draw_dens(data_, iso_val=self.iso_value_m, 
+                            nx=self.nx, ny=self.ny, nz=self.nz, padding=self.padding)
+            if hasattr(visual_objects_raw, "n_blocks"):
+            # Es ist ein MultiBlock -> in Liste von Meshes umwandeln
+                visual_objects = [visual_objects_raw[i] for i in range(visual_objects_raw.n_blocks)]
             else:
-                # Falls es nur das Mesh direkt ist:
-                mesh = item
-                args = {}
-            # first mesh is positive orbital lobe
-            current_color = self.color_pos if i == 0 else self.color_neg
-            clean_args = args.copy() if args else {}
-            clean_args.pop('color', None)
-            actor = self.plotter.add_mesh(mesh, 
-                                          color=current_color, 
-                                          **mesh_args, **clean_args)
-            actor._is_orbital = True
-            actor._orbital_index = i 
-            self.orb_mesh.append(mesh)
-            self.current_mode = "orbital"
-        self.plotter.render()
+            # Es ist bereits eine Liste oder ein anderes iterierbares Objekt
+                visual_objects = list(visual_objects_raw)
+
+            for i, item in enumerate(visual_objects):
+                # Falls draw_orb_molden Tupel (mesh, args) zurückgibt:
+                if isinstance(item, tuple):
+                    mesh, args = item
+                else:
+                    # Falls es nur das Mesh direkt ist:
+                    mesh = item
+                    args = {}
+                # first mesh is positive orbital lobe
+                current_color = self.color_pos if i == 0 else self.color_neg
+                clean_args = args.copy() if args else {}
+                clean_args.pop('color', None)
+                actor = self.plotter.add_mesh(mesh, 
+                                            color=current_color, 
+                                            **mesh_args, **clean_args)
+                actor._is_orbital = True
+                actor._orbital_index = i 
+                self.orb_mesh.append(mesh)
+                self.current_mode = "orbital"
+            self.plotter.render()
+        else:
+            QMessageBox.information(self, "Plot", f"selected data type:'{data_.type}' is not allowed for Dens Plot ")
 
     def draw_esp_molden(self):
         self.plotter.clear_actors()
         self.orb_mesh = []
         index = self.file_list.currentIndex()
         data_ = self.dataset_dict.get(index.data())
-        # draw molecule structure
-        visual_objects = draw_mol(data_.atom_points, data_.atom_types, 
-                            self.cpk_colors,self.cov_radii, self.default_radius)
-        for mesh, args in visual_objects:
-            self.plotter.add_mesh(mesh, smooth_shading=True, **args)
+        if data_.type in {"molden", "fchk"}:
+            # draw molecule structure
+            visual_objects = draw_mol(data_.atom_points, data_.atom_types, 
+                                self.cpk_colors,self.cov_radii, self.default_radius)
+            for mesh, args in visual_objects:
+                self.plotter.add_mesh(mesh, smooth_shading=True, **args)
+            
+            self.progressBar.setRange(0, 100)
+            self.progressBar.setValue(0)
+            self.progressBar.setFormat(f"calc ESP %p%")
+            # 
+            mol, dm, surf,_ = prep_esp_molden(data_, iso_val=self.iso_value_m, 
+                        nx=self.nx, ny=self.ny, nz=self.nz, padding=self.padding)
         
-        self.progressBar.setRange(0, 100)
-        self.progressBar.setValue(0)
-        self.progressBar.setFormat(f"calc ESP %p%")
-        # 
-        mol, dm, surf,_ = prep_esp_molden(data_, iso_val=self.iso_value_m, 
-                    nx=self.nx, ny=self.ny, nz=self.nz, padding=self.padding)
-    
-        self.start_time = time.time() 
-        self.progressBar.setRange(0,0)
+            self.start_time = time.time() 
+            self.progressBar.setRange(0,0)
 
-        self.esp_thread = ESPWorkerThread(dm, mol, surf)
-        self.esp_thread.finished.connect(self.on_esp_finished)
-        self.esp_thread.start(QThread.HighestPriority)
-        self.current_mode = "esp"
+            self.esp_thread = ESPWorkerThread(dm, mol, surf)
+            self.esp_thread.finished.connect(self.on_esp_finished)
+            self.esp_thread.start(QThread.HighestPriority)
+            self.current_mode = "esp"
+        else:
+            QMessageBox.information(self, "Plot", f"selected data type:'{data_.type}' is not allowed for ESP Plot ")
 
     def on_esp_finished(self, result_data):
-        """Diese Funktion wird aufgerufen, sobald die Berechnung fertig ist."""
+        """This function is called after calculation is finished"""
         total_esp, surf = result_data
-         
         # Attach result to mesh
         surf.point_data["ESP"] = total_esp
         v_max = np.max(np.abs(total_esp))
@@ -1055,74 +1071,80 @@ class MoleculeApp(QtWidgets.QMainWindow, Ui_MainWindow):
         self.orb_mesh = []
         index = self.file_list.currentIndex()
         data_ = self.dataset_dict.get(index.data())
-        # draw molecule structure
-        visual_objects = draw_mol(data_.atom_points, data_.atom_types, 
-                            self.cpk_colors,self.cov_radii, self.default_radius)
-        for mesh, args in visual_objects:
-            self.plotter.add_mesh(mesh, smooth_shading=True, **args)
-        # plot 
-        raw_text = self.input_opacity.text()
-        if raw_text: 
-                try:
-                    opac = float(raw_text) / 100
-                except ValueError:
-                    opac = 0.4
-                    self.input_opacity.setText("40") 
-        mesh_args={
-                "opacity":opac, 
-                "pbr":True,            # PBR 
-                #"metallic":0.5,        # Metallic
-                "roughness":0.3,       # Gloss
-                "smooth_shading":True
-            }
-        visual_objects_raw, self.grid = draw_spin(data_, iso_val=self.iso_value,
-                            nx=self.nx, ny=self.ny, nz=self.nz, padding=self.padding)  
+        if data_.type in {"molden", "fchk"}:
+            # draw molecule structure
+            visual_objects = draw_mol(data_.atom_points, data_.atom_types, 
+                                self.cpk_colors,self.cov_radii, self.default_radius)
+            for mesh, args in visual_objects:
+                self.plotter.add_mesh(mesh, smooth_shading=True, **args)
+            # plot 
+            raw_text = self.input_opacity.text()
+            if raw_text: 
+                    try:
+                        opac = float(raw_text) / 100
+                    except ValueError:
+                        opac = 0.4
+                        self.input_opacity.setText("40") 
+            mesh_args={
+                    "opacity":opac, 
+                    "pbr":True,            # PBR 
+                    #"metallic":0.5,        # Metallic
+                    "roughness":0.3,       # Gloss
+                    "smooth_shading":True
+                }
+            visual_objects_raw, self.grid = draw_spin(data_, iso_val=self.iso_value,
+                                nx=self.nx, ny=self.ny, nz=self.nz, padding=self.padding)  
 
-        if hasattr(visual_objects_raw, "n_blocks"):
-        # It is a MultiBlock -> convert to a list of meshes.
-            visual_objects = [visual_objects_raw[i] for i in range(visual_objects_raw.n_blocks)]
-        else:
-        # It is already a list or another iterable.
-            visual_objects = list(visual_objects_raw)
-
-        for i, item in enumerate(visual_objects):
-            # If draw_orb_molden returns a tuple (mesh, args):
-            if isinstance(item, tuple):
-                mesh, args = item
+            if hasattr(visual_objects_raw, "n_blocks"):
+            # It is a MultiBlock -> convert to a list of meshes.
+                visual_objects = [visual_objects_raw[i] for i in range(visual_objects_raw.n_blocks)]
             else:
-                # If it is the mesh itself:
-                mesh = item
-                args = {}
-            # first mesh is positive orbital lobe
-            current_color = self.color_pos if i == 0 else self.color_neg
-            clean_args = args.copy() if args else {}
-            clean_args.pop('color', None)
-            actor = self.plotter.add_mesh(mesh, 
-                                          color=current_color, 
-                                          **mesh_args, **clean_args)
-            actor._is_orbital = True
-            actor._orbital_index = i 
-            self.orb_mesh.append(mesh)
-        self.current_mode = "spin"
-        self.plotter.render()
+            # It is already a list or another iterable.
+                visual_objects = list(visual_objects_raw)
+
+            for i, item in enumerate(visual_objects):
+                # If draw_orb_molden returns a tuple (mesh, args):
+                if isinstance(item, tuple):
+                    mesh, args = item
+                else:
+                    # If it is the mesh itself:
+                    mesh = item
+                    args = {}
+                # first mesh is positive orbital lobe
+                current_color = self.color_pos if i == 0 else self.color_neg
+                clean_args = args.copy() if args else {}
+                clean_args.pop('color', None)
+                actor = self.plotter.add_mesh(mesh, 
+                                            color=current_color, 
+                                            **mesh_args, **clean_args)
+                actor._is_orbital = True
+                actor._orbital_index = i 
+                self.orb_mesh.append(mesh)
+            self.current_mode = "spin"
+            self.plotter.render()
+        else:
+            QMessageBox.information(self, "Plot", f"selected data type:'{data_.type}' is not allowed for this Plot ")
 
     def draw_spin_mapped(self):
         self.check_scalar_bar.Checked=False
         self.plotter.clear_actors()
         index = self.file_list.currentIndex()
         data_ = self.dataset_dict.get(index.data())
-        # draw molecule structure
-        visual_objects = draw_mol(data_.atom_points, data_.atom_types, 
-                        self.cpk_colors,self.cov_radii, self.default_radius)
-        for mesh, args in visual_objects:
-            self.plotter.add_mesh(mesh, smooth_shading=True, **args)
-        # plot esp surface
-        surf, v_min, v_max, act_sc = draw_spin_mapped(data_, iso_val=self.iso_value_m, 
-                    nx=self.nx, ny=self.ny, nz=self.nz, padding=self.padding)
+        if data_.type in {"molden", "fchk"}:
+            # draw molecule structure
+            visual_objects = draw_mol(data_.atom_points, data_.atom_types, 
+                            self.cpk_colors,self.cov_radii, self.default_radius)
+            for mesh, args in visual_objects:
+                self.plotter.add_mesh(mesh, smooth_shading=True, **args)
+            # plot esp surface
+            surf, v_min, v_max, act_sc = draw_spin_mapped(data_, iso_val=self.iso_value_m, 
+                        nx=self.nx, ny=self.ny, nz=self.nz, padding=self.padding)
 
-        mesh_args = self.prep_esp(v_min, v_max, surf, act_sc, "SpinDens")
-        self.ESP_mesh = self.plotter.add_mesh(**mesh_args)
-        self.current_mode = "spin-mapped"
+            mesh_args = self.prep_esp(v_min, v_max, surf, act_sc, "SpinDens")
+            self.ESP_mesh = self.plotter.add_mesh(**mesh_args)
+            self.current_mode = "spin-mapped"
+        else:
+            QMessageBox.information(self, "Plot", f"selected data type:'{data_.type}' is not allowed for this Plot ")
 
 # ---- SAVE IMAGES ------
     def save_image(self):
@@ -1248,7 +1270,7 @@ class MoleculeApp(QtWidgets.QMainWindow, Ui_MainWindow):
                     if hasattr(self, "current_mode"):
                         match self.current_mode:
                             case "esp" | "spin-mapped":
-                                cb_group = create_3d_colorbar_group(self.v_min, self.v_max, self.current_mode, self.cmap)
+                                cb_group = create_3d_colorbar_group(self.v_min, self.v_max, self.current_mode, self.color)
                                 for mesh, base_name, kwargs in cb_group:
                                     cb_pl.add_mesh(mesh, name=f"{base_name}_emit", **kwargs)
 
@@ -1256,7 +1278,7 @@ class MoleculeApp(QtWidgets.QMainWindow, Ui_MainWindow):
             data_1=self.dataset_dict.get(items[0])
             data_2=self.dataset_dict.get(items[1])
             if {data_1.type, data_2.type} == {"dens_cube", "esp_cube"}:  
-                cb_group = create_3d_colorbar_group(self.v_min, self.v_max, "esp", self.cmap)
+                cb_group = create_3d_colorbar_group(self.v_min, self.v_max, "esp", self.color)
                 for mesh, base_name, kwargs in cb_group:
                     cb_pl.add_mesh(mesh, name=f"{base_name}_emit", **kwargs)
         if cb_group:
