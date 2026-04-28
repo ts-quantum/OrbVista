@@ -1154,6 +1154,8 @@ class MoleculeApp(QtWidgets.QMainWindow, Ui_MainWindow):
                     f'image', 
                     "Image (*.png)"
                     )
+        if not path:  
+            return
         self.plotter.screenshot(path)
 
 # ---- EXPORT -----
@@ -1164,6 +1166,8 @@ class MoleculeApp(QtWidgets.QMainWindow, Ui_MainWindow):
                     f'povray.inc', 
                     "Include (*.inc)"
                     )
+        if not path:  
+            return
         object=os.path.splitext(os.path.basename(path))[0]
         selection = self.file_list.selectionModel().selectedIndexes()
         items = [index.data() for index in selection]
