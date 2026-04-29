@@ -83,7 +83,7 @@ J. Chem. Phys., 152, 184108 (2020). doi: 10.1063/5.0006002.
     git clone https://github.com
     cd MolVista
 
-2. Install dependencies
+2. Install dependencies (using a VENV is recommended)
     pip install -r requirements.txt
 
 3. Requirements
@@ -97,6 +97,8 @@ J. Chem. Phys., 152, 184108 (2020). doi: 10.1063/5.0006002.
 ## Usage
 
     python3 main.py
+
+Note: Precompiled executable is available for macOS, for Linux arm64, and Linux x64 see 'MolSuite'
 
 ## License
 
