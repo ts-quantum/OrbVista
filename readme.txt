@@ -77,6 +77,10 @@ PSI-4:
 D. G. A. Smith, L. A. Burns, et al., "Psi4 1.4: Open-source software for high-throughput quantum chemistry", 
 J. Chem. Phys., 152, 184108 (2020). doi: 10.1063/5.0006002.
 
+# Rendering Software:
+Blender Foundation (2026). Blender (Version 5.1): Cycles Rendering Engine [Computer software]. Retrieved from blender.org
+POV-Ray Team (2013). Persistence of Vision Raytracer (Version 3.7) [Computer software]. GNU Affero General Public License. Retrieved from povray.org
+
 ## Installation
 
 1. Clone the repository
