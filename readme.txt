@@ -8,16 +8,17 @@ results and publication-quality rendering.
 
 ## Key Features
 - **Wide Format Support**: Load and visualize data from `.cube`, `.molden`, 
-  and `.fchk` files.
+  and `.fchk` files (with automatic Bohr-to-Angstrom conversion).
 - **Dynamic Property Mapping**: Project ESP or Spin Density onto electron density 
-  isosurfaces with customizable colormaps and scaling.
+  isosurfaces with customizable colormaps and automatic v-min/v-max scaling.
 - **Interactive UI**: 
-  - Manage multiple files in a synchronized session.
+  - Manage multiple files in a synchronized session supporting also open-shell systems.
   - Customize lobe colors and background settings via intuitive context menus.
   - Dedicated **Grid Settings** for on-the-fly volumetric calculations.
 - **High-End Export**: 
-  - **POV-Ray**: Generates detailed `.inc` files for ray-traced imagery.
-  - **Blender**: Exports `.glb` along with colorbar for ESP and Spin-Density mapping
+  - **POV-Ray**: Generates detailed `.inc` files for ray-traced imagery 
+    (including embedded scalebar logic).
+  - **Blender**: Exports .glb scenes along with separate colorbar objects for mapping.
   - **Analysis**: Save calculated grids back to `.cube` format (including synchronized 
     `.xyz` for ChimeraX).
 
