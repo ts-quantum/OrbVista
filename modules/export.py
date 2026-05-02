@@ -4,8 +4,7 @@ import numpy as np
 import pyvista as pv
 from pathlib import Path
 from collections import defaultdict
-#from pyscf import lib, dft, scf, df, gto
-#import pyscf
+from pyscf import lib
 from PySide6.QtCore import QThread, Signal
 from modules.draw import get_validated_dm
 
@@ -427,8 +426,6 @@ def create_3d_colorbar_group(v_min, v_max, mode="esp", cmap_name="rainbow", heig
     
     return visuals
 
-
-
 ##### CUBE EXPORT ##########
 
 def save_cube(filename, mol, data_grid, nx=50, ny=50, nz=50, comment="Density"):
@@ -473,7 +470,8 @@ def save_cube(filename, mol, data_grid, nx=50, ny=50, nz=50, comment="Density"):
         
         # Convert in 3D (nx, ny, nz)
         # If the meshgrid was created with indexing='ij':
-        data_3d = data_flat.reshape((nx, ny, nz), order='F')
+        data_3d = data_flat.reshape((nx, ny, nz), order='F') 
+        #data_3d_final = data_3d.transpose(2, 1, 0)
         
         # In Case Transpose from (X, Y, Z) to (X, Z, Y) is needed
         # most stable way for VMD/Avogadro:

@@ -129,13 +129,14 @@ def draw_orb_molden(data_obj, orbital_index=0, spin_idx=0, iso_level=0.02,
     grid_values = mo_values.reshape(nx, ny, nz)
 
     # create structured Grid
-    X, Y, Z = np.meshgrid(x, y, z)
+    X, Y, Z = np.meshgrid(x, y, z, indexing='ij') ###
     grid = pv.StructuredGrid(X, Y, Z)
 
     # assign grid values
     grid_values = mo_values.reshape((nx, ny, nz), order='F')
     grid_values = np.transpose(grid_values, (0, 2, 1)) 
-    grid.point_data["values"] = grid_values.flatten()
+    #grid.point_data["values"] = grid_values.flatten()
+    grid.point_data["values"]=mo_values.reshape((nx,ny,nz),order='F').ravel(order='C')
 
     # create two Mesh object and assign names
     iso_pos = grid.contour([iso_level], scalars="values")
