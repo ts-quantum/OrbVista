@@ -1315,19 +1315,32 @@ class MoleculeApp(QtWidgets.QMainWindow, Ui_MainWindow):
          cb_pl.close()
 
     def export_cube(self):
+        index = self.file_list.currentIndex()
+        data_ = self.dataset_dict.get(index.data())
+        if not hasattr(self, 'grid') or self.grid is None:
+            QMessageBox.information(self, "Cube Export", f"No Grid, please draw MO or Iso-Density first")
+            return
+        if not hasattr(data_.mol,'natm'):
+            QMessageBox.information(self, "Cube Export", f"This Operation is only permitted from *.molden or *.fchk files")
+            return
+        if self.grid.n_points != self.nx * self.ny * self.nz:
+            QMessageBox.information(self, "Cube Export", f"Grid mismatch, please draw MO or Iso-Density first")
+            return
         path, _ = QFileDialog.getSaveFileName(
                     None, 
                     "Export Cube", 
                     "cube", 
                     "cube (*.cube)"
                     )
-        index = self.file_list.currentIndex()
-        data_ = self.dataset_dict.get(index.data())
-
         save_cube(path, data_.mol, self.grid, nx=self.nx, ny=self.ny, nz=self.nz)
         save_xyz(path,data_.mol)
 
     def export_esp_cube(self):
+        index = self.file_list.currentIndex()
+        data_obj = self.dataset_dict.get(index.data())
+        if data_obj.type != 'molden':
+            QMessageBox.information(self, "Cube ESP Export", f"This Operation is only permitted from *.molden or *.fchk files")
+            return  
         filename, _ = QFileDialog.getSaveFileName(
                     None, 
                     "Export Cube", 
@@ -1335,15 +1348,10 @@ class MoleculeApp(QtWidgets.QMainWindow, Ui_MainWindow):
                     "cube (*.cube)"
                     )
         if not filename: return
-        index = self.file_list.currentIndex()
-        data_obj = self.dataset_dict.get(index.data())
-
+        
         # Set progress bar to indeterminate (marquee mode).
         self.progressBar.setRange(0, 0) 
         self.progressBar.setFormat("Exporting Cube (Parallel)...")
-        
-        index = self.file_list.currentIndex()
-        data_obj = self.dataset_dict.get(index.data())
 
         self.cube_thread = CubeWorkerThread(data_obj, filename, 
                 nx=self.nx, ny=self.ny, nz=self.nz, padding=self.padding)

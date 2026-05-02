@@ -82,7 +82,7 @@
     <p><span class="badge">Import</span> Use the <b>App</b> menu to load various computational formats:</p>
     <ul>
         <li><code>Load MO / Dens / ESP Cube</code>: Import standard Gaussian-style cube files.</li>
-        <li><code>Load Molden / FCHK</code>: Import electronic structure data directly for on-the-fly grid calculation.</li>
+        <li><code>Load Molden / FCHK</code>: Import electronic structure data directly for on-the-fly grid calculation (FCHK files are processed using the MOLDEN pipeline).</li>
     </ul>
     <p><b>File List Interaction:</b> Loaded files appear in the sidebar. 
     Single-click to draw the structure; <b>Double-click</b> to remove a file from the session.</p>
@@ -135,7 +135,9 @@
     <h3><span class="badge">Export Menu</span> Save Your Results</h3>
     <ul>
         <li><b>Images:</b> High-resolution <code>.png</code> screenshots.</li>
-        <li><b>Rendering:</b> Export scenes as <code>POV-Ray (.inc)</code> or <code>Blender (.glb)</code> files.</li>
+        <li><b>Rendering:</b> Export scenes as <code>POV-Ray (.inc)</code> or <code>Blender (.glb)</code> files. 
+            <span class="context-item">Scalebar:</span> Mapping exports include a scalebar (defined in the <code>.inc</code> header or as a separate <code>.glb</code> file for Blender).
+        </li>
         <li><b>Analysis:</b> Save <code>.cube</code> files. <span class="context-item">Note:</span> Exporting an MO/Dens cube also generates a synchronized <code>.xyz</code> file for external tools like ChimeraX.</li>
     </ul>
 </div>
