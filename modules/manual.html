@@ -72,6 +72,7 @@
 </head>
 <body>
 
+
 <div class="header-box">
     <h1>OrbVista Manual</h1>
     <p>Advanced Volumetric Analysis & Molecular Property Mapping Suite</p>
@@ -82,6 +83,7 @@
     <p><span class="badge">Import</span> Use the <b>App</b> menu to load various computational formats:</p>
     <ul>
         <li><code>Load MO / Dens / ESP Cube</code>: Import standard Gaussian-style cube files.</li>
+        <li><code>Load Band / Dens / ESP Cube (GPAW)</code>: Import GPAW cube files for electron bands, pseudo-density and electrostatic potential.</li>
         <li><code>Load Molden / FCHK</code>: Import electronic structure data directly for on-the-fly grid calculation (FCHK files are processed using the MOLDEN pipeline).</li>
     </ul>
     <p><b>File List Interaction:</b> Loaded files appear in the sidebar. 
@@ -94,17 +96,22 @@
     <div class="step-box">
         <h3>Electronic Properties</h3>
         <ul>
+            <li><b>Cubes:</b> Select a single density, band, or MO cube for visualization.</li>
+            <li><b>ESP Plots:</b> For ESP plots, select both a density cube and an ESP cube.</li>
             <li><b>MOs:</b> Select a Molden/FCHK file to unlock the <b>Alpha/Beta Orbital Tabs</b>.</li>
             <li><b>Mapping:</b> Toggle the <code>Scale Bar</code> for ESP or Spin Density mapping.</li>
-            <li><b>Adjustments:</b> Use the sliders to set <code>Opacity</code> and define <code>v_max / v_min</code> for consistent color scales.</li>
+            <li><b>Adjustments:</b> Use the text fields to set <code>Opacity</code> and define <code>v_max / v_min</code> for consistent color scales.</li>
         </ul>
     </div>
     <div class="step-box">
         <h3>Grid & Calculation</h3>
         <p>Access <code>Menu -> Grid Settings</code> to define the resolution for new calculations:</p>
         <ul>
-            <li><b>n_pts:</b> Grid points (nx, ny, nz) for volumetric data.</li>
             <li><b>Padding:</b> Buffer zone (in Angström) around the molecule to prevent field cut-offs.</li>
+            <li><b>n_pts:</b> Grid points (nx, ny, nz) for volumetric data.</li>
+            <li><b>Iso value Orb/Dens:</b> Set Iso Value for Orbital/Density Plots.</li>
+            <li><b>Iso value ESP:</b> Set Iso Value for ESP Plots.</li>
+            <li><b>Solid State Note:</b> Consider significantly higher Iso Values when plotting solid-state DFT data (GPAW) to account for higher electron densities.</li>
         </ul>
     </div>
 </div>
@@ -127,7 +134,7 @@
     <ul>
         <li><b>MO / Dens / ESP:</b> Select a Molden or FCHK file to trigger 3D generation.</li>
         <li><b>ESP (Cube-based):</b> Select <b>two</b> files (Density + ESP-Potential) to generate a mapped surface from existing data.</li>
-        <li><b>Spin Mapping:</b> Directly project spin density onto the electron density surface from QC outputs.</li>
+        <li><b>Spin Mapping:</b> Project the spin density difference (α - β) directly onto the total electron density surface from quantum chemical outputs.</li>
     </ul>
 </div>
 
@@ -147,7 +154,7 @@
 </div>
 
 <p style="text-align: center; color: #95a5a6; font-size: 0.85em; margin-top: 50px;">
-    OrbVista v1.2 &copy; 2026 -  Dr. Tobias Schulz
+    OrbVista v1.3 &copy; 2026 - Dr. Tobias Schulz
 </p>
 
 </body>

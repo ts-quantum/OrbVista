@@ -66,7 +66,7 @@
     <item row="4" column="0">
      <widget class="QLabel" name="label_5">
       <property name="text">
-       <string>iso value Orb</string>
+       <string>iso value Orb/Dens</string>
       </property>
      </widget>
     </item>
@@ -76,7 +76,7 @@
     <item row="5" column="0">
      <widget class="QLabel" name="label_6">
       <property name="text">
-       <string>iso value Dens </string>
+       <string>iso value ESP </string>
       </property>
      </widget>
     </item>

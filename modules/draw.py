@@ -218,6 +218,26 @@ def draw_esp(grid_dens=None, grid_esp=None, iso_val=0.002):
     smoothed_surface = mapped_surface.smooth(n_iter=100)
     return smoothed_surface, v_min, v_max, active_scalar
 
+def draw_esp_gpaw(dens_grid=None, esp_grid=None, iso_val=0.002):
+
+    resampled_esp = dens_grid.sample(esp_grid)
+    dens_grid['esp_values'] = resampled_esp['scalars'] / (1.0 / (0.529177**3))
+    
+    contour = dens_grid.contour(isosurfaces=[iso_val], scalars='scalars')
+    contour = contour.compute_normals(cell_normals=False, flip_normals=True)
+
+    #project ESP values on surface
+    mapped_surface = contour.sample(esp_grid)
+    # 
+    active_scalar = mapped_surface.active_scalars_name
+
+    v_min=np.min(mapped_surface.active_scalars)
+    v_max=np.max(mapped_surface.active_scalars)
+
+    smoothed_surface = mapped_surface.smooth(n_iter=100)
+    return smoothed_surface, v_min, v_max, active_scalar
+
+
 # sub procedures for ESP Mapping
 
 def calculate_esp_on_surface(mol, dm, surf):   

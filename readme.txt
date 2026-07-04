@@ -1,6 +1,5 @@
 # OrbVista
 
-
 **OrbVista** is an advanced graphical suite for the interactive visualization and 
 volumetric analysis of Molecular Orbitals (MO), Electrostatic Potentials (ESP), 
 and Spin Densities. It serves as the visual bridge between computational chemistry 
@@ -8,7 +7,8 @@ results and publication-quality rendering.
 
 ## Key Features
 - **Wide Format Support**: Load and visualize data from `.cube`, `.molden`, 
-  and `.fchk` files (with automatic Bohr-to-Angstrom conversion).
+  and `.fchk` files (with automatic Bohr-to-Angstrom conversion). GPAW cube files 
+  are also supported (band, density and ESP)
 - **Dynamic Property Mapping**: Project ESP or Spin Density onto electron density 
   isosurfaces with customizable colormaps and automatic v-min/v-max scaling.
 - **Interactive UI**: 
@@ -26,9 +26,9 @@ results and publication-quality rendering.
 - **File List**: Manage your computational results. Double-click to remove, 
   single-click to focus.
 - **Orbital Tabs**: Browse Alpha and Beta orbitals directly from Molden/FCHK outputs.
-- **Property Controls**: Real-time adjustment of opacity, isolevels, and $v_{max}/v_{min}$ 
+- **Property Controls**: Real-time adjustment of opacity, isolevels, and v_max/v_min 
   scaling for mapping.
-- **Grid Settings**: Fine-tune your calculation resolution ($n_x, n_y, n_z$) and 
+- **Grid Settings**: Fine-tune your calculation resolution (n_x, n_y, n_z) and 
   spatial padding.
 
 ## Workflow & Integration
@@ -37,7 +37,7 @@ results and publication-quality rendering.
 1. **Load**: Import your `molden` or `fchk` file via `App -> Load`.
 2. **Calculate**: Select the desired property (e.g., `Draw -> ESP molden`).
 3. **Analyze**: Adjust the isosurface and colormap (e.g., `turbo`, `hsv`, `coolwarm`).
-4. **Export**: Use `Export -> POV-Ray` or Èxport -> Blender' for professional rendering 
+4. **Export**: Use `Export -> POV-Ray` or Export -> Blender' for professional rendering 
 or `Export -> MO Cube` for further analysis.
 
 ## Project Structure

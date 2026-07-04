@@ -208,7 +208,7 @@
      <item>
       <widget class="QPushButton" name="abort">
        <property name="text">
-        <string>abbort</string>
+        <string>abort</string>
        </property>
       </widget>
      </item>
@@ -257,6 +257,11 @@
     <addaction name="actionLoad_MO_cube"/>
     <addaction name="actionLoad_Dens_cube"/>
     <addaction name="actionLoad_ESP_cube"/>
+    <addaction name="separator"/>
+    <addaction name="actionLoad_gpaw_band_cube"/>
+    <addaction name="actionLoad_gpaw_dens_cube"/>
+    <addaction name="actionLoad_gpaw_esp_cube"/>
+    <addaction name="separator"/>
     <addaction name="actionLoad_molden_file"/>
     <addaction name="actionLoad_fchk_file"/>
     <addaction name="separator"/>
@@ -268,6 +273,7 @@
     </property>
     <addaction name="action_draw_mo_cube"/>
     <addaction name="action_draw_esp_cube"/>
+    <addaction name="separator"/>
     <addaction name="separator"/>
     <addaction name="action_draw_mo_molden"/>
     <addaction name="action_draw_esp_molden"/>
@@ -364,7 +370,10 @@
   </action>
   <action name="action_draw_mo_cube">
    <property name="text">
-    <string>MO/Dens cube</string>
+    <string>MO/Dens/Band cube</string>
+   </property>
+   <property name="iconText">
+    <string>MO/Dens/Band cube</string>
    </property>
   </action>
   <action name="action_draw_esp_cube">
@@ -449,12 +458,37 @@
   </action>
   <action name="actionHelp">
    <property name="text">
-    <string>Help</string>
+    <string>Manual</string>
    </property>
   </action>
   <action name="actionCredits">
    <property name="text">
     <string>Credits</string>
+   </property>
+  </action>
+  <action name="actionLoad_gpaw_band_cube">
+   <property name="text">
+    <string>Load band cube (gpaw)</string>
+   </property>
+  </action>
+  <action name="actionLoad_gpaw_dens_cube">
+   <property name="text">
+    <string>Load dens cube (gpaw)</string>
+   </property>
+  </action>
+  <action name="actionLoad_gpaw_esp_cube">
+   <property name="text">
+    <string>Load esp cube (gpaw)</string>
+   </property>
+  </action>
+  <action name="action_draw_band_cube">
+   <property name="text">
+    <string>band cube (gpaw)</string>
+   </property>
+  </action>
+  <action name="action_draw_esp_cube_gpaw">
+   <property name="text">
+    <string>esp/dens cube (gpaw)</string>
    </property>
   </action>
  </widget>

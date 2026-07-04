@@ -65,7 +65,7 @@ from modules.export import (export_pov_colorbar, export_pov_esp, export_pov_mol,
                             export_pov_header_mo, export_pov_header_mol, export_pov_header_spin,
                             export_pov_header_spin_mapped, export_pov_mo, create_3d_colorbar_group,
                             save_cube, save_xyz)
-from modules.draw import (draw_dens, draw_esp, draw_mol, draw_orb_molden, draw_orb, draw_spin,
+from modules.draw import (draw_dens, draw_esp, draw_esp_gpaw, draw_mol, draw_orb_molden, draw_orb, draw_spin,
                           draw_spin_mapped, prep_esp_molden)
 from modules.draw import ESPWorkerThread
 from modules.export import CubeWorkerThread
@@ -199,6 +199,76 @@ class MoleculeData: #always call arguments by name!
         self.grid_values = grid_values
         self.surf_mesh = surf_mesh
         self.grid_indices = grid_indices
+
+    # Solid State DFT dens and esp cubes
+    @classmethod
+    def from_gpaw_cube(cls, filepath):
+        bohr_to_angstrom = 0.529177
+        # Faktor, um Elektronendichte von e/Bohr^3 in e/Angstrom^3 (wie VESTA) umzurechnen
+        bohr3_to_angstrom3 = 1.0 / (bohr_to_angstrom**3) 
+        fname = os.path.basename(filepath)
+        
+        with open(filepath, 'r') as f:
+            lines = f.readlines()
+            
+        line3 = lines[2].split()
+        num_atoms = abs(int(line3[0]))
+        origin = np.array([float(x) for x in line3[1:4]]) * bohr_to_angstrom
+
+        # 3D-Gittervektoren (Voxel-Kanten) auslesen
+        voxel_matrix = np.zeros((3, 3))
+        grid_shape = []
+        for i in range(3):
+            parts = lines[3 + i].split()
+            grid_shape.append(int(parts[0]))
+            voxel_matrix[i] = np.array([float(x) for x in parts[1:4]]) * bohr_to_angstrom
+
+        # Atome einlesen
+        atoms_list = []
+        atom_types = []
+        for i in range(6, 6 + num_atoms):
+            parts = lines[i].split()
+            atom_types.append(int(parts[0]))
+            atoms_list.append([float(x) * bohr_to_angstrom for x in parts[2:5]])
+        
+        atom_points = np.array(atoms_list)
+
+        # Volumendaten parsen
+        data_words = []
+        for line in lines[6 + num_atoms:]:
+            data_words.extend(line.split())
+        
+        # Array formen und direkt in VESTA-Einheiten umrechnen!
+        grid_values = np.array(data_words, dtype=float).reshape(grid_shape) * bohr3_to_angstrom3
+
+                # --- FIX: Gitteraufbau in echten Integerschritten für korrekte Angström-Skala ---
+        # Wir nutzen np.arange von 0 bis grid_shape (Anzahl der Voxel)
+        a = np.arange(grid_shape[0])
+        b = np.arange(grid_shape[1])
+        c = np.arange(grid_shape[2])
+        
+        # Erzeuge die diskreten Gitterpunkte
+        A, B, C = np.meshgrid(a, b, c, indexing='ij')
+        points = np.stack([A, B, C], axis=-1)
+        
+        # Jedes diskrete Voxel [i, j, k] mit den realen Voxel-Vektoren multiplizieren!
+        # Das transformiert das Grid exakt in den echten Angström-Raum zu den Atomen.
+        real_points = np.dot(points, voxel_matrix) + origin
+        
+        # Erzeuge das strukturierte PyVista-Gitter
+        grid = pv.StructuredGrid(real_points[..., 0], real_points[..., 1], real_points[..., 2])
+ 
+        # 'F'-Order sorgt dafür, dass die schnellen/langsamen Achsen von GPAW deckungsgleich liegen
+        grid['scalars'] = grid_values.flatten(order='F')
+
+        return cls(
+            name=fname,
+            atom_points=atom_points,
+            atom_types=np.array(atom_types),
+            grid=grid,
+            grid_values=grid_values
+        )
+
 
     @classmethod
     def from_cube(cls, filepath):
@@ -396,12 +466,18 @@ class MoleculeApp(QtWidgets.QMainWindow, Ui_MainWindow):
         
         self.actionLoad_MO_cube.triggered.connect(self.load_mo_cube)
         self.actionLoad_Dens_cube.triggered.connect(self.load_dens_cube)
+        
+        self.actionLoad_gpaw_band_cube.triggered.connect(self.load_gpaw_band_cube)
+        self.actionLoad_gpaw_dens_cube.triggered.connect(self.load_gpaw_dens_cube)
+        self.actionLoad_gpaw_esp_cube.triggered.connect(self.load_gpaw_esp_cube)
+        
         self.actionLoad_ESP_cube.triggered.connect(self.load_esp_cube)
         self.actionLoad_molden_file.triggered.connect(self.load_molden)
         self.actionLoad_fchk_file.triggered.connect(self.load_fchk)
         
         self.action_draw_mo_cube.triggered.connect(self.draw_mo_cube)
         self.action_draw_esp_cube.triggered.connect(self.draw_esp_cube)
+
         self.action_draw_mo_molden.triggered.connect(self.draw_mo_molden)
         self.action_draw_esp_molden.triggered.connect(self.draw_esp_molden)
         self.action_draw_dens_molden.triggered.connect(self.draw_dens_molden)
@@ -463,6 +539,7 @@ class MoleculeApp(QtWidgets.QMainWindow, Ui_MainWindow):
             7: "blue",   #N
             8: "red",    #O
             9: "orange",  #F
+            11: "#DEE219B0", #Na
             14: "darkgrey", #Si
             12: "darkgreen", #Mg
             15: "brown",  #P
@@ -476,6 +553,7 @@ class MoleculeApp(QtWidgets.QMainWindow, Ui_MainWindow):
             40: "cadetblue",   # Zr (Zirconium)
             44: "teal",        # Ru (Ruthenium)
             45: "deeppink",    # Rh (Rhodium) 
+            74: "#0B0846CD", #Tungsten (W)
             78: "lightgrey",    # Pt (Platinum)
             35: "darkred",   #Br
             53: "darkviolet" # I
@@ -731,6 +809,48 @@ class MoleculeApp(QtWidgets.QMainWindow, Ui_MainWindow):
                     current.append(fname)
             self.list_model.setStringList(current)
 
+    def load_gpaw_band_cube(self):
+        files, _ = QtWidgets.QFileDialog.getOpenFileNames(
+        self, "Load Band Cube", "", "output file (*.cube)")
+        if files:
+            current=self.list_model.stringList()
+            for name in files:
+                fname=os.path.basename(name)
+                if fname not in current:
+                    new_data = MoleculeData.from_gpaw_cube(name)
+                    new_data.type="gpaw_band_cube"
+                    self.dataset_dict[fname]=new_data
+                    current.append(fname)
+            self.list_model.setStringList(current)
+
+    def load_gpaw_dens_cube(self):
+        files, _ = QtWidgets.QFileDialog.getOpenFileNames(
+        self, "Load GPAW Dens Cube", "", "output file (*.cube)")
+        if files:
+            current=self.list_model.stringList()
+            for name in files:
+                fname=os.path.basename(name)
+                if fname not in current:
+                    new_data = MoleculeData.from_gpaw_cube(name)
+                    new_data.type="gpaw_dens_cube"
+                    self.dataset_dict[fname]=new_data
+                    current.append(fname)
+            self.list_model.setStringList(current)
+
+    def load_gpaw_esp_cube(self):
+        files, _ = QtWidgets.QFileDialog.getOpenFileNames(
+        self, "Load GPAW ESP Cube", "", "output file (*.cube)")
+        if files:
+            current=self.list_model.stringList()
+            for name in files:
+                fname=os.path.basename(name)
+                if fname not in current:
+                    new_data = MoleculeData.from_gpaw_cube(name)
+                    new_data.type="gpaw_esp_cube"
+                    self.dataset_dict[fname]=new_data
+                    current.append(fname)
+            self.list_model.setStringList(current)
+
     def load_molden(self):
         files, _ = QtWidgets.QFileDialog.getOpenFileNames(
         self, "Load molden file", "", "output file (*.molden)")
@@ -830,7 +950,7 @@ class MoleculeApp(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.input_opacity.setText("50")
         index = self.file_list.currentIndex()
         data = self.dataset_dict.get(index.data())
-        if data.type in {"mo_cube", "dens_cube"}:
+        if data.type in {"mo_cube", "dens_cube", "gpaw_band_cube", "gpaw_dens_cube"}:
             self.orb_mesh = []
             self.plotter.clear_actors()
             # plot molecule structure
@@ -847,7 +967,7 @@ class MoleculeApp(QtWidgets.QMainWindow, Ui_MainWindow):
                     "smooth_shading":True
                     }
             
-            visual_objects_raw, self.grid = draw_orb(grid=data.grid, iso=0.02)
+            visual_objects_raw, self.grid = draw_orb(grid=data.grid, iso=self.iso_value)
 
             # Check: Is it a single object or a MultiBlock
             if isinstance(visual_objects_raw, pv.MultiBlock):
@@ -881,24 +1001,40 @@ class MoleculeApp(QtWidgets.QMainWindow, Ui_MainWindow):
             data_1=self.dataset_dict.get(items[0])
             data_2=self.dataset_dict.get(items[1])
         except Exception as e:
-            QMessageBox.information(self, "Error", f"Error '{str(e)}', please select one dens and one esp cube")
+            QMessageBox.information(self, "Error", f"Error '{str(e)}', please select one GPAW dens and one GPAW esp cube")
             return
-        #exactly one dens_cube and esp_cube
-        if {data_1.type, data_2.type} == {"dens_cube", "esp_cube"}:
-            dens_data=next(d for d in [data_1, data_2] if d.type == "dens_cube")
-            esp_data=next(d for d in [data_1, data_2] if d.type == "esp_cube")
+        # Erlaubte Typen definieren
+        allowed_types = {"dens_cube", "esp_cube", "gpaw_dens_cube", "gpaw_esp_cube"}
+        selected_types = {data_1.type, data_2.type}
+
+        # 1. Prüfen, ob die gewählten Typen eine erlaubte Teilmenge sind und es zwei verschiedene sind
+        if selected_types.issubset(allowed_types) and len(selected_types) == 2:
+            
+            # 2. Daten sauber per "in"-Abfrage zuordnen
+            dens_data = next(d for d in [data_1, data_2] if d.type in {"dens_cube", "gpaw_dens_cube"})
+            esp_data = next(d for d in [data_1, data_2] if d.type in {"esp_cube", "gpaw_esp_cube"})
+            
             # plot molecule structure
             visual_objects = draw_mol(dens_data.atom_points, dens_data.atom_types, 
-                                      self.cpk_colors,self.cov_radii, self.default_radius)
+                                      self.cpk_colors, self.cov_radii, self.default_radius)
             for mesh, args in visual_objects:
                 self.plotter.add_mesh(mesh, smooth_shading=True, **args)
-            # plot esp surface
-            esp_mesh, vmin, vmax, active_scalar = draw_esp(grid_dens=dens_data.grid, 
-                                            grid_esp=esp_data.grid,iso_val=0.002)
+            
+            # 3. Weiche für das richtige Zeichen-Skript anhand der GPAW-Kennung im Namen
+            if "gpaw" in dens_data.type:
+                esp_mesh, vmin, vmax, active_scalar = draw_esp_gpaw(
+                    dens_grid=dens_data.grid, esp_grid=esp_data.grid, iso_val=self.iso_value_m
+                )
+            else:
+                esp_mesh, vmin, vmax, active_scalar = draw_esp(
+                    grid_dens=dens_data.grid, grid_esp=esp_data.grid, iso_val=self.iso_value_m
+                )
+            
             mesh_args = self.prep_esp(vmin, vmax, esp_mesh, active_scalar)
             self.ESP_mesh = self.plotter.add_mesh(**mesh_args)
+            
         else:
-            QMessageBox.information(self, "Plot", f"selected data types:'{data_1.type}' and '{data_2.type}' are not allowed for ESP Cube Plot ")
+            QMessageBox.information(self, "Plot", f"Selected data types: '{data_1.type}' and '{data_2.type}' are not allowed for ESP Cube Plot.")
 
     def draw_mo_molden(self):
         self.plotter.clear_actors()
