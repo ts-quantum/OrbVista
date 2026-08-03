@@ -1442,13 +1442,13 @@ class MoleculeApp(QtWidgets.QMainWindow, Ui_MainWindow):
         elif len(items) ==2:  # esp cube
             data_1=self.dataset_dict.get(items[0])
             data_2=self.dataset_dict.get(items[1])
-            if {data_1.type, data_2.type} == {"dens_cube", "esp_cube"}:  
+            if {data_1.type, data_2.type} == {"dens_cube", "esp_cube"} or {"gpaw_dens_cube", "gpaw_esp_cube"}:  
                 cb_group = create_3d_colorbar_group(self.v_min, self.v_max, "esp", self.color)
                 for mesh, base_name, kwargs in cb_group:
                     cb_pl.add_mesh(mesh, name=f"{base_name}_emit", **kwargs)
         if cb_group:
-         cb_pl.export_gltf(cb_path)
-         cb_pl.close()
+            cb_pl.export_gltf(cb_path)
+            cb_pl.close()
 
     def export_cube(self):
         index = self.file_list.currentIndex()
